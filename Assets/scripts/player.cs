@@ -50,8 +50,8 @@ public class player : MonoBehaviour
             isJump = false;
         }
         if (collision.gameObject.CompareTag("portal")){
-            Debug.Log("start_scene -> stage_scene");
-            SceneManager.LoadScene("stage_scene"); // 해당 장면으로 이동
+            Debug.Log("start_scene -> stage_select");
+            SceneManager.LoadScene("stage_select_scene"); // 해당 장면으로 이동
         }
     }
 }
