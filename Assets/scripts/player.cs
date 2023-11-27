@@ -5,31 +5,53 @@ using UnityEngine;
 using UnityEngine.SceneManagement; // 장면 관리를 위해 필요
 
 public class player : MonoBehaviour
-{
-    Rigidbody2D rb;
-    [SerializeField]
-    private float move_speed; // 좌우 속도
-    private float jump_force; // 점프 힘
-    // Update is called once per frame
-    private void Start(){
-        rb = GetComponent<Rigidbody2D>();
+{    
+    private Rigidbody2D rigid;
+    private Animator animator;
+    private bool isJump;
+    private float move_speed = 4, jump_force = 4; // 좌우 속도 및 점프력
+    void Start(){
+        rigid = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
     }
-    private void Update()
+    void Update()
     {
-        // player 이동
-        Vector3 move_to = new Vector3(move_speed * Time.deltaTime ,0f,0f);
-        if (Input.GetKey(KeyCode.LeftArrow)) { transform.position -= move_to; }
-        if(Input.GetKey(KeyCode.RightArrow)){ transform.position += move_to; }
-        if(Input.GetKey(KeyCode.Space)){ rb.velocity = Vector2.up * jump_force;  }
+        move();
+        jump();
+    }
+    private void move()
+    {
+        float horizontalInput = Input.GetAxis("Horizontal");
+        if (horizontalInput > 0){ 
+            animator.SetBool("right",true); 
+            animator.SetBool("left",false); 
+        }
+        else if (horizontalInput < 0){ 
+            animator.SetBool("right",false); 
+            animator.SetBool("left",true); 
+        }
+        Vector3 move_to = new Vector3(horizontalInput * move_speed * Time.deltaTime, 0f, 0f);
+        transform.Translate(move_to);
+    }
 
-        // start flag아래로 떨어져서 다음 scene으로 이동
-        if(transform.position.y < -5){
+    private void jump()
+    {
+        if(Input.GetKeyDown(KeyCode.Space) && !isJump)
+        {
+            rigid.AddForce(Vector3.up * jump_force, ForceMode2D.Impulse);
+            isJump = true; 
+        }
+    }
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("ground"))
+        {
+            Debug.Log("충돌 감지: " + collision.gameObject.tag);
+            isJump = false;
+        }
+        if (collision.gameObject.CompareTag("portal")){
             Debug.Log("start_scene -> stage_scene");
             SceneManager.LoadScene("stage_scene"); // 해당 장면으로 이동
         }
-    }
-    private void FixedUpdate() {
-        float horizon = Input.GetAxis("Horizontal");
-        rb.velocity = new Vector2(horizon * 3, rb.velocity.y);
     }
 }
